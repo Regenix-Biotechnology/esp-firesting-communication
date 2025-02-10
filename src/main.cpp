@@ -11,10 +11,12 @@
 
 #define TEMP_POS_IN_MSG (8)
 #define DO_POS_IN_MSG (9)
+#define DO_PERCENT_POS_IN_MSG (11)
 #define PH_POS_IN_MSG (17)
 
 #define TEMP_DIVIDER (1000.0)
 #define DO_DIVIDER (1000.0)
+#define DO_PERCENT_DIVIDER (1000.0)
 #define PH_DIVIDER (100.0)
 
 char tx_buff[REQUEST_MEASURE_SIZE] = {0};
@@ -31,6 +33,7 @@ typedef struct __attribute__((packed)){
   char cmd[4];
   float_t temperature;
   float_t oxy_dissous;
+  float_t percent_o2;
   float_t ph;
 } sRxData;
 
@@ -92,20 +95,24 @@ void loop() {
   #endif
 
 
-  Serial.println(rx_buff);// for debug
-  Serial.println(read_size);// for debug
+  // Serial.println(rx_buff);// for debug
+  // Serial.println(read_size);// for debug
 
   sRxData data;
   parseRxData(&data, rx_buff, read_size);
 
-  Serial.print("Temperature: ");
-  Serial.println(data.temperature);
-  Serial.print("DO: ");
-  Serial.println(data.oxy_dissous);
-  Serial.print("Ph: ");
+  Serial.print("Timestamp: ");
+  Serial.print(millis());
+  Serial.print(", Temperature: ");
+  Serial.print(data.temperature);
+  Serial.print(", DO: ");
+  Serial.print(data.oxy_dissous);
+  Serial.print(", O2Percent: ");
+  Serial.print(data.percent_o2);
+  Serial.print(", Ph: ");
   Serial.println(data.ph);  
 
-  delay(1500);
+  delay(1000);
   
   // put your main code here, to run repeatedly:
 }
@@ -121,6 +128,9 @@ void parseRxData(sRxData *data, char *dataStr, uint8_t size){
 
   //read do
   data->oxy_dissous = getFloatAt(dataStr, DO_POS_IN_MSG, size) / DO_DIVIDER;
+
+  //read do pecvent
+  data->percent_o2 = getFloatAt(dataStr, DO_PERCENT_POS_IN_MSG, size) / DO_PERCENT_DIVIDER;
 
   //read ph
   data->ph = getFloatAt(dataStr, PH_POS_IN_MSG, size) / PH_DIVIDER;
